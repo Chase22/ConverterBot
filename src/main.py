@@ -21,14 +21,17 @@ bot.
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from appconfig import AppConfig
-import logging
-import pint
+import logging, pint, re
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+#Compile Regex
+regexString = "^(\d+\.?\d*)(\S*)"
+regex = re.compile(regexString)
 
 
 # Define a few command handlers. These usually take the two arguments bot and
@@ -44,7 +47,18 @@ def help(bot, update):
 
 def convert(bot, update):
     message = update.message
-    
+    text = message.text
+    parts = text.split(' ')
+    for idx, string in enumerate(parts):
+        if string[0].isdigit():
+            result = regex.match(string)
+            token = list(result.group(1,2))
+            print(token)
+            token[0] = float(token[0])
+            if not token[1]:
+                token [1] = parts[idx+1]
+            print(token)    
+    return
 
 
 def error(bot, update, error):
@@ -53,9 +67,15 @@ def error(bot, update, error):
 
 
 def main():
+    #load the config
+    config = AppConfig()
+    
+    print('start')
+    
     """Start the bot."""
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater("492836528:AAE6W9g6Fkt0xJnOleWBmub6DXvbLl75-5E")
+    print(config.config['Telegram']['key'])
+    updater = Updater(config.config['Telegram']['key'])
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
