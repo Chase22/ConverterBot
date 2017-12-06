@@ -21,6 +21,7 @@ bot.
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from appconfig import AppConfig
+from converter import Converter
 import logging, pint, re
 
 # Enable logging
@@ -32,6 +33,12 @@ logger = logging.getLogger(__name__)
 #Compile Regex
 regexString = "^(\d+\.?\d*)(\S*)"
 regex = re.compile(regexString)
+
+#get Unitregistry
+ureg = pint.UnitRegistry();
+
+#get Converter
+converter = Converter()
 
 
 # Define a few command handlers. These usually take the two arguments bot and
@@ -53,11 +60,16 @@ def convert(bot, update):
         if string[0].isdigit():
             result = regex.match(string)
             token = list(result.group(1,2))
-            print(token)
-            token[0] = float(token[0])
+            #token[0] = float(token[0])
             if not token[1]:
                 token [1] = parts[idx+1]
-            print(token)    
+            print(token)
+            try:
+                measurement = ureg(token[0]+'*'+token[1])
+                print (measurement)
+                print (converter.convert(measurement))
+            except pint.UndefinedUnitError:
+                print ('Unit not defined')
     return
 
 
