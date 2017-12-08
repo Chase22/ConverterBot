@@ -1,1 +1,2 @@
 foot = meter
+inch = centimeter

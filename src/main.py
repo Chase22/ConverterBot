@@ -53,23 +53,40 @@ def help(bot, update):
     update.message.reply_text('Help!')
 
 def convert(bot, update):
-    message = update.message
+    counter = 0
+    
+    message = update.message.reply_to_message
     text = message.text
-    parts = text.split(' ')
-    for idx, string in enumerate(parts):
+    parts = list(text.split(' '))
+    endmsg = list()
+
+    i = 0
+    while i < len(parts):
+        string = parts[i]
+        i += 1
         if string[0].isdigit():
             result = regex.match(string)
             token = list(result.group(1,2))
-            #token[0] = float(token[0])
+            
+            #endmsg.append('{{{}}}'.format(counter))
+            counter += 1
             if not token[1]:
-                token [1] = parts[idx+1]
+                token [1] = parts[i]
+                i += 1
             print(token)
             try:
-                measurement = ureg(token[0]+'*'+token[1])
-                print (measurement)
-                print (converter.convert(measurement))
+                measurement = ureg((token[0]+'*'+token[1]).lower())
+                measurement = converter.convert(measurement)
+                endmsg.append('{:.02fP}'.format(measurement))
             except pint.UndefinedUnitError:
                 print ('Unit not defined')
+        else:
+            endmsg.append(string)
+    
+    msgString = ' '.join(endmsg)
+    
+    update.message.reply_text(msgString)
+    print(msgString)
     return
 
 
@@ -94,9 +111,10 @@ def main():
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("convert", convert))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, convert))
+    #dp.add_handler(MessageHandler(Filters.text, convert))
 
     # log all errors
     dp.add_error_handler(error)
